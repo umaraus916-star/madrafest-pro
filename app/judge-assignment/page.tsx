@@ -20,10 +20,14 @@ export default function JudgeAssignmentPage() {
   const [judgeId, setJudgeId] = useState('');
   const [programmeId, setProgrammeId] = useState('');
 
-  useEffect(() => {
-    loadJudges();
-    loadProgrammes();
-  }, []);
+const [assignments, setAssignments] = useState<any[]>([]);
+const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  loadJudges();
+  loadProgrammes();
+  loadAssignments();
+}, []); 
 
   async function loadJudges() {
     const { data } = await supabase
@@ -42,6 +46,25 @@ export default function JudgeAssignmentPage() {
 
     if (data) setProgrammes(data);
   }
+
+async function loadAssignments() {
+  setLoading(true);
+
+  const { data } = await supabase
+    .from('judge_programmes')
+    .select(`
+      id,
+      judges(name),
+      programmes(name)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (data) {
+    setAssignments(data);
+  }
+
+  setLoading(false);
+}
 
   async function assignJudge() {
     if (!judgeId || !programmeId) {
@@ -68,6 +91,19 @@ export default function JudgeAssignmentPage() {
     setJudgeId('');
     setProgrammeId('');
   }
+
+async function deleteAssignment(id: string) {
+  const ok = confirm('Delete this assignment?');
+
+  if (!ok) return;
+
+  await supabase
+    .from('judge_programmes')
+    .delete()
+    .eq('id', id);
+
+  loadAssignments();
+}
 
   return (
     <div className="p-6">
@@ -110,6 +146,50 @@ export default function JudgeAssignmentPage() {
         >
           Assign Judge
         </button>
+
+<hr className="my-6" />
+
+<h2 className="text-xl font-semibold mb-4">
+  Assignment List
+</h2>
+
+{loading ? (
+  <p>Loading...</p>
+) : (
+  <table className="w-full border">
+    <thead>
+ <tr className="bg-gray-100">
+  <th className="border p-2">Judge</th>
+  <th className="border p-2">Programme</th>
+  <th className="border p-2">Action</th>
+</tr>
+    </thead>
+
+    <tbody>
+      {assignments.map((item: any) => (
+<tr key={item.id}>
+  <td className="border p-2">
+    {item.judges?.name}
+  </td>
+
+  <td className="border p-2">
+    {item.programmes?.name}
+  </td>
+
+  <td className="border p-2">
+    <button
+      onClick={() => deleteAssignment(item.id)}
+      className="text-red-600"
+    >
+      Delete
+    </button>
+  </td>
+</tr>
+      ))}
+    </tbody>
+  </table>
+)}
+
       </div>
     </div>
   );
