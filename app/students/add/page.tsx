@@ -3,83 +3,71 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-export default function AddStudent()  { 
-const router = useRouter();
 
-const [name, setName] = useState("");
-const [admissionNo, setAdmissionNo] = useState("");
-const [studentClass, setStudentClass] = useState("");
+export default function AddStudentPage() {
+  const router = useRouter();
 
-const [photo, setPhoto] = useState<File | null>(null);
-const [uploading, setUploading] = useState(false);
+  const [admissionNo, setAdmissionNo] = useState("");
+  const [name, setName] = useState("");
+  const [studentClass, setStudentClass] = useState("");
 
-const saveStudent = async () => {
-  const { error } = await supabase.from("students").insert([
-    {
-      name,
-      admission_no: admissionNo,
-      class: studentClass,
-    },
-  ]);
+  const saveStudent = async () => {
+    const { error } = await supabase
+      .from("students")
+      .insert([
+        {
+          admission_no: admissionNo,
+          name: name,
+          class: studentClass,
+        },
+      ]);
 
-  if (error) {
-    alert("Error: " + error.message);
-    return;
-  }
+    if (error) {
+      alert(error.message);
+      return;
+    }
 
-  alert("Student Added Successfully");
-  router.push("/students");
-}; 
- return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-blue-700">
-        ➕ Add Student
+    alert("Student Added Successfully");
+    router.push("/students");
+  };
+
+  return (
+    <div className="max-w-xl mx-auto">
+
+      <h1 className="text-3xl font-bold mb-6">
+        Add Student
       </h1>
 
-      <div className="mt-6 rounded-xl bg-white p-6 shadow space-y-4">
+      <div className="bg-white rounded-xl shadow p-6 space-y-4">
+        <input
+          className="w-full border p-3 rounded"
+          placeholder="Admission No"
+          value={admissionNo}
+          onChange={(e) => setAdmissionNo(e.target.value)}
+        />
 
         <input
-  type="text"
-  placeholder="Student Name"
-  value={name}
-  onChange={(e) => setName(e.target.value)}
-  className="w-full rounded-lg border p-3"
-/>
+          className="w-full border p-3 rounded"
+          placeholder="Student Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-         <input
-  type="text"
-  placeholder="Admission Number"
-  value={admissionNo}
-  onChange={(e) => setAdmissionNo(e.target.value)}
-  className="w-full rounded-lg border p-3"
-/>
-
-          <input
-  type="text"
-  placeholder="Class"
-  value={studentClass}
-  onChange={(e) => setStudentClass(e.target.value)}
-  className="w-full rounded-lg border p-3"
-/>
         <input
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    if (e.target.files?.[0]) {
-      setPhoto(e.target.files[0]);
-    }
-  }}
-  className="mb-4 w-full"
-/>
+          className="w-full border p-3 rounded"
+          placeholder="Class"
+          value={studentClass}
+          onChange={(e) => setStudentClass(e.target.value)}
+        />
 
         <button
-  onClick={saveStudent}
-  className="w-full rounded-lg bg-blue-700 p-3 text-white font-bold"
->
-  Save Student
-</button>
+          onClick={saveStudent}
+          className="w-full bg-blue-600 text-white p-3 rounded-lg"
+        >
+          Save Student
+        </button>
 
       </div>
-    </main>
+    </div>
   );
 }

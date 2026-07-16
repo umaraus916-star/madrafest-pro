@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function EditStudentPage() {
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
 
-  const [name, setName] = useState("");
+  const id = params.id as string;
+
   const [admissionNo, setAdmissionNo] = useState("");
+  const [name, setName] = useState("");
   const [studentClass, setStudentClass] = useState("");
 
   useEffect(() => {
@@ -23,22 +25,19 @@ export default function EditStudentPage() {
       .eq("id", id)
       .single();
 
-    if (error) {
-      alert(error.message);
-      return;
+    if (!error && data) {
+      setAdmissionNo(data.admission_no);
+      setName(data.name);
+      setStudentClass(data.class);
     }
-
-    setName(data.name);
-    setAdmissionNo(data.admission_no);
-    setStudentClass(data.class);
   }
 
   async function updateStudent() {
     const { error } = await supabase
       .from("students")
       .update({
-        name,
         admission_no: admissionNo,
+        name: name,
         class: studentClass,
       })
       .eq("id", id);
@@ -52,43 +51,42 @@ export default function EditStudentPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-blue-700">
-        ✏️ Edit Student
+    <div className="max-w-xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">
+        Edit Student
       </h1>
 
-      <div className="mt-6 rounded-xl bg-white p-5 shadow">
+      <div className="bg-white rounded-xl shadow p-6 space-y-4">
+
         <input
-          type="text"
+          className="w-full border p-3 rounded"
+          placeholder="Admission No"
+          value={admissionNo}
+          onChange={(e) => setAdmissionNo(e.target.value)}
+        />
+
+        <input
+          className="w-full border p-3 rounded"
           placeholder="Student Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="mb-4 w-full rounded border p-3"
         />
 
         <input
-          type="text"
-          placeholder="Admission Number"
-          value={admissionNo}
-          onChange={(e) => setAdmissionNo(e.target.value)}
-          className="mb-4 w-full rounded border p-3"
-        />
-
-        <input
-          type="text"
+          className="w-full border p-3 rounded"
           placeholder="Class"
           value={studentClass}
           onChange={(e) => setStudentClass(e.target.value)}
-          className="mb-4 w-full rounded border p-3"
         />
 
         <button
           onClick={updateStudent}
-          className="w-full rounded bg-blue-700 p-3 font-bold text-white"
+          className="w-full bg-green-600 text-white p-3 rounded"
         >
-          Save Changes
+          Update Student
         </button>
+
       </div>
-    </main>
+    </div>
   );
 }
